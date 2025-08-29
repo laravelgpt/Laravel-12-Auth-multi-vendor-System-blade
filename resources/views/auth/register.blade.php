@@ -104,13 +104,23 @@
                             </div>
                             <x-text-input 
                                 id="password" 
-                                class="block w-full pl-10 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border border-white/30 dark:border-gray-600/30 transition-all duration-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-xl text-sm sm:text-base" 
+                                class="block w-full pl-10 pr-12 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border border-white/30 dark:border-gray-600/30 transition-all duration-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-xl text-sm sm:text-base" 
                                 type="password" 
                                 name="password" 
                                 required 
                                 autocomplete="new-password" 
                                 placeholder="Create a strong password"
                             />
+                            <!-- Password Toggle Button -->
+                            <button type="button" id="password-toggle" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200">
+                                <svg id="password-eye" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                <svg id="password-eye-slash" class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>
+                                </svg>
+                            </button>
                             <!-- Password Strength Indicator -->
                             <div class="mt-2">
                                 <div class="flex items-center space-x-2">
@@ -147,13 +157,23 @@
                             </div>
                             <x-text-input 
                                 id="password_confirmation" 
-                                class="block w-full pl-10 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border border-white/30 dark:border-gray-600/30 transition-all duration-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-xl text-sm sm:text-base" 
+                                class="block w-full pl-10 pr-12 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border border-white/30 dark:border-gray-600/30 transition-all duration-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-xl text-sm sm:text-base" 
                                 type="password" 
                                 name="password_confirmation" 
                                 required 
                                 autocomplete="new-password" 
                                 placeholder="Confirm your password"
                             />
+                            <!-- Confirm Password Toggle Button -->
+                            <button type="button" id="password-confirm-toggle" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200">
+                                <svg id="password-confirm-eye" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                <svg id="password-confirm-eye-slash" class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>
+                                </svg>
+                            </button>
                         </div>
                         <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
                     </div>
@@ -251,6 +271,9 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('password_confirmation');
+            const emailInput = document.getElementById('email');
+            const nameInput = document.getElementById('name');
             const strengthBar = document.getElementById('password-strength-bar');
             const strengthText = document.getElementById('password-strength-text');
             const feedbackContainer = document.getElementById('password-feedback');
@@ -258,7 +281,16 @@
             const breachFeedback = document.getElementById('breach-feedback');
             const recommendations = document.getElementById('password-recommendations');
             
+            // Password toggle elements
+            const passwordToggle = document.getElementById('password-toggle');
+            const passwordEye = document.getElementById('password-eye');
+            const passwordEyeSlash = document.getElementById('password-eye-slash');
+            const passwordConfirmToggle = document.getElementById('password-confirm-toggle');
+            const passwordConfirmEye = document.getElementById('password-confirm-eye');
+            const passwordConfirmEyeSlash = document.getElementById('password-confirm-eye-slash');
+            
             let validationTimeout;
+            let emailValidationTimeout;
 
             // Password strength colors
             const strengthColors = {
@@ -279,6 +311,95 @@
                 4: 'Good',
                 5: 'Strong'
             };
+
+            // Password toggle functionality
+            function setupPasswordToggle(input, toggle, eye, eyeSlash) {
+                toggle.addEventListener('click', function() {
+                    const type = input.type;
+                    if (type === 'password') {
+                        input.type = 'text';
+                        eye.classList.add('hidden');
+                        eyeSlash.classList.remove('hidden');
+                    } else {
+                        input.type = 'password';
+                        eye.classList.remove('hidden');
+                        eyeSlash.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Setup password toggles
+            setupPasswordToggle(passwordInput, passwordToggle, passwordEye, passwordEyeSlash);
+            setupPasswordToggle(confirmPasswordInput, passwordConfirmToggle, passwordConfirmEye, passwordConfirmEyeSlash);
+
+            // Email validation
+            function validateEmail(email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(email);
+            }
+
+            // Username validation
+            function validateUsername(username) {
+                return username.length >= 2 && /^[a-zA-Z0-9\s]+$/.test(username);
+            }
+
+            // Real-time email validation
+            function validateEmailField() {
+                const email = emailInput.value.trim();
+                const emailContainer = emailInput.closest('div').parentElement;
+                let existingFeedback = emailContainer.querySelector('.email-feedback');
+                
+                if (!existingFeedback) {
+                    existingFeedback = document.createElement('div');
+                    existingFeedback.className = 'email-feedback mt-1 text-xs';
+                    emailContainer.appendChild(existingFeedback);
+                }
+
+                if (!email) {
+                    existingFeedback.innerHTML = '';
+                    emailInput.classList.remove('border-red-500', 'border-green-500');
+                    return;
+                }
+
+                if (!validateEmail(email)) {
+                    existingFeedback.innerHTML = '<span class="text-red-500">⚠️ Please enter a valid email address</span>';
+                    emailInput.classList.add('border-red-500');
+                    emailInput.classList.remove('border-green-500');
+                } else {
+                    existingFeedback.innerHTML = '<span class="text-green-500">✅ Valid email format</span>';
+                    emailInput.classList.add('border-green-500');
+                    emailInput.classList.remove('border-red-500');
+                }
+            }
+
+            // Real-time username validation
+            function validateUsernameField() {
+                const username = nameInput.value.trim();
+                const nameContainer = nameInput.closest('div').parentElement;
+                let existingFeedback = nameContainer.querySelector('.username-feedback');
+                
+                if (!existingFeedback) {
+                    existingFeedback = document.createElement('div');
+                    existingFeedback.className = 'username-feedback mt-1 text-xs';
+                    nameContainer.appendChild(existingFeedback);
+                }
+
+                if (!username) {
+                    existingFeedback.innerHTML = '';
+                    nameInput.classList.remove('border-red-500', 'border-green-500');
+                    return;
+                }
+
+                if (!validateUsername(username)) {
+                    existingFeedback.innerHTML = '<span class="text-red-500">⚠️ Username must be at least 2 characters and contain only letters, numbers, and spaces</span>';
+                    nameInput.classList.add('border-red-500');
+                    nameInput.classList.remove('border-green-500');
+                } else {
+                    existingFeedback.innerHTML = '<span class="text-green-500">✅ Valid username format</span>';
+                    nameInput.classList.add('border-green-500');
+                    nameInput.classList.remove('border-red-500');
+                }
+            }
 
             // Check password strength locally
             function checkPasswordStrength(password) {
@@ -410,8 +531,22 @@
                 }
             });
 
+            // Email validation event listeners
+            emailInput.addEventListener('input', function() {
+                clearTimeout(emailValidationTimeout);
+                emailValidationTimeout = setTimeout(validateEmailField, 300);
+            });
+
+            emailInput.addEventListener('blur', validateEmailField);
+
+            // Username validation event listeners
+            nameInput.addEventListener('input', function() {
+                validateUsernameField();
+            });
+
+            nameInput.addEventListener('blur', validateUsernameField);
+
             // Confirm password validation
-            const confirmPasswordInput = document.getElementById('password_confirmation');
             confirmPasswordInput.addEventListener('input', function() {
                 const password = passwordInput.value;
                 const confirmPassword = this.value;
