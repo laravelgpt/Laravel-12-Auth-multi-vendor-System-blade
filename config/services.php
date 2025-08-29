@@ -14,12 +14,15 @@ return [
     |
     */
 
-    'postmark' => [
-        'token' => env('POSTMARK_TOKEN'),
+    'mailgun' => [
+        'domain' => env('MAILGUN_DOMAIN'),
+        'secret' => env('MAILGUN_SECRET'),
+        'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
+        'scheme' => 'https',
     ],
 
-    'resend' => [
-        'key' => env('RESEND_KEY'),
+    'postmark' => [
+        'token' => env('POSTMARK_TOKEN'),
     ],
 
     'ses' => [
@@ -27,24 +30,6 @@ return [
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
-
-    'slack' => [
-        'notifications' => [
-            'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
-            'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
-        ],
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Social Login Services
-    |--------------------------------------------------------------------------
-    |
-    | Configure your social login providers here. You'll need to set up
-    | applications in each provider's developer console and add the
-    | credentials to your .env file.
-    |
-    */
 
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
@@ -64,10 +49,12 @@ return [
         'redirect' => env('GITHUB_REDIRECT_URI'),
     ],
 
-    'twitter' => [
-        'client_id' => env('TWITTER_CLIENT_ID'),
-        'client_secret' => env('TWITTER_CLIENT_SECRET'),
-        'redirect' => env('TWITTER_REDIRECT_URI'),
+    'haveibeenpwned' => [
+        'api_url' => env('HAVEIBEENPWNED_API_URL', 'https://api.pwnedpasswords.com/range/'),
+        'cache_ttl' => env('HAVEIBEENPWNED_CACHE_TTL', 3600),
+        'timeout' => env('HAVEIBEENPWNED_TIMEOUT', 10),
+        'max_retries' => env('HAVEIBEENPWNED_MAX_RETRIES', 3),
+        'enabled' => env('HAVEIBEENPWNED_ENABLED', true),
     ],
 
 ];

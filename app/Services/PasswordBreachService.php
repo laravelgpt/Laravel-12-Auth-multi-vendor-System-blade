@@ -9,10 +9,18 @@ use Illuminate\Support\Facades\Config;
 
 class PasswordBreachService
 {
-    private string $apiUrl = 'https://api.pwnedpasswords.com/range/';
-    private int $cacheTtl = 3600; // 1 hour cache
-    private int $timeout = 10;
-    private int $maxRetries = 3;
+    private string $apiUrl;
+    private int $cacheTtl;
+    private int $timeout;
+    private int $maxRetries;
+
+    public function __construct()
+    {
+        $this->apiUrl = config('services.haveibeenpwned.api_url', 'https://api.pwnedpasswords.com/range/');
+        $this->cacheTtl = config('services.haveibeenpwned.cache_ttl', 3600); // 1 hour cache
+        $this->timeout = config('services.haveibeenpwned.timeout', 10);
+        $this->maxRetries = config('services.haveibeenpwned.max_retries', 3);
+    }
 
     /**
      * Check if password has been compromised in data breaches (real-time)

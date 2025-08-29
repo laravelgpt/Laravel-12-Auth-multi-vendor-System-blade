@@ -183,6 +183,13 @@ FACEBOOK_REDIRECT_URI=http://localhost:8000/auth/facebook/callback
 GITHUB_CLIENT_ID=your_github_client_id
 GITHUB_CLIENT_SECRET=your_github_client_secret
 GITHUB_REDIRECT_URI=http://localhost:8000/auth/github/callback
+
+# HaveIBeenPwned API Configuration (for password breach checking)
+HAVEIBEENPWNED_API_URL=https://api.pwnedpasswords.com/range/
+HAVEIBEENPWNED_CACHE_TTL=3600
+HAVEIBEENPWNED_TIMEOUT=10
+HAVEIBEENPWNED_MAX_RETRIES=3
+HAVEIBEENPWNED_ENABLED=true
 ```
 
 ### Password Breach Service Configuration
