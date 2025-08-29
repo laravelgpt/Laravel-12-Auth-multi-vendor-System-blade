@@ -33,7 +33,7 @@
         <!-- Main Content -->
         <div class="relative min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0">
             <!-- Logo/Brand Section -->
-            <div class="mb-8 text-center">
+            {{-- <div class="mb-8 text-center">
                 <div class="flex items-center justify-center mb-4">
                     <div class="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-2xl transform hover:scale-110 transition-all duration-300">
                         <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,7 +45,7 @@
                     {{ config('app.name', 'Laravel') }}
                 </h1>
                 <p class="text-gray-600 dark:text-gray-400 mt-2">Secure Authentication System</p>
-            </div>
+            </div> --}}
 
             <!-- Content Slot -->
             <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-2xl rounded-2xl border border-white/20 dark:border-gray-700/20">

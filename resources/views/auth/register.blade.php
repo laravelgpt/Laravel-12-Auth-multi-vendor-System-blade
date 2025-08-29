@@ -1,9 +1,7 @@
 <x-guest-layout>
-    <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-purple-50 to-navy-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 sm:p-6 lg:p-8">
-        <!-- Single Card with Transparent Blur -->
+      <!-- Single Card with Transparent Blur -->
         <div class="w-full max-w-md">
-            <div class="bg-white/10 dark:bg-gray-900/10 backdrop-blur-xl shadow-2xl rounded-3xl border border-white/20 dark:border-gray-700/20 p-6 sm:p-8">
-                
+             
                 <!-- Header -->
                 <div class="text-center mb-8">
                     <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 via-purple-600 to-navy-600 shadow-lg mb-6">
@@ -208,9 +206,9 @@
                         </a>
                     </p>
                 </div>
-            </div>
+            
         </div>
-    </div>
+   
 
     <!-- Animation Scripts -->
     <script>
