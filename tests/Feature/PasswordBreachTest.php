@@ -211,6 +211,22 @@ describe('Registration with Password Validation', function () {
         expect($errorMessage)->toContain('Password') || expect($errorMessage)->toContain('password');
     });
 
+    it('blocks registration with specific compromised password Gsmhex@123#', function () {
+        $response = $this->postJson('/api/v1/register', [
+            'name' => 'Test User',
+            'email' => 'test2@example.com',
+            'password' => 'Gsmhex@123#', // Specific compromised password
+            'password_confirmation' => 'Gsmhex@123#'
+        ]);
+        
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['password']);
+        
+        // Check that the error message indicates a security issue
+        $errorMessage = $response->json('errors.password.0');
+        expect($errorMessage)->toContain('Password') || expect($errorMessage)->toContain('security') || expect($errorMessage)->toContain('breach');
+    });
+
     it('allows registration with strong, uncompromised password', function () {
         $response = $this->postJson('/api/v1/register', [
             'name' => 'Test User',

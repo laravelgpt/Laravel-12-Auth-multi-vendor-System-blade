@@ -477,8 +477,18 @@
                             }
 
                             breachFeedback.innerHTML = `<span class="text-red-500">${icon} This password has been found in ${count.toLocaleString()} data breaches. <strong>Do not use this password!</strong></span>`;
+                            
+                            // Add visual warning to password input
+                            passwordInput.classList.add('border-red-500', 'ring-red-500');
+                            passwordInput.classList.remove('border-green-500', 'ring-green-500');
                         } else {
                             breachFeedback.innerHTML = '<span class="text-green-500">✅ Password not found in any known breaches</span>';
+                            
+                            // Remove warning styling if password is safe
+                            passwordInput.classList.remove('border-red-500', 'ring-red-500');
+                            if (password.length >= 8) {
+                                passwordInput.classList.add('border-green-500', 'ring-green-500');
+                            }
                         }
 
                         // Show recommendations

@@ -36,6 +36,16 @@ class AuthController extends Controller
                 'token' => $token,
                 'token_type' => 'Bearer'
             ], 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::warning('Registration validation failed', [
+                'errors' => $e->errors(),
+                'data' => $request->except(['password'])
+            ]);
+
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
             Log::error('Registration failed', [
                 'error' => $e->getMessage(),

@@ -190,6 +190,8 @@ class PasswordBreachService
             'hash_prefix' => $prefix
         ]);
 
+        // Return safe result if API is unavailable
+        // This prevents blocking user registration when API is down
         return [
             'compromised' => false,
             'count' => 0

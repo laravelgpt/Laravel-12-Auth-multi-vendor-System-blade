@@ -35,7 +35,7 @@
                             </div>
                             <x-text-input 
                                 id="email" 
-                                class="block w-full pl-10 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border border-white/30 dark:border-gray-600/30 transition-all duration-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-xl text-sm sm:text-base" 
+                                class="block w-full pl-10 bg-white/50 dark:bg-gray-800/50 border border-white/30 dark:border-gray-600/30 transition-all duration-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-xl text-sm sm:text-base" 
                                 type="email" 
                                 name="email" 
                                 :value="old('email')" 
