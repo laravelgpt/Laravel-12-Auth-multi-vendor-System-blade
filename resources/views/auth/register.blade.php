@@ -476,16 +476,24 @@
                                 icon = 'ℹ️';
                             }
 
-                            breachFeedback.innerHTML = `<span class="text-red-500">${icon} This password has been found in ${count.toLocaleString()} data breaches. <strong>Do not use this password!</strong></span>`;
+                            breachFeedback.innerHTML = `<span class="text-red-600 font-semibold">${icon} <strong>SECURITY ALERT:</strong> This password has been found in <strong>${count.toLocaleString()}</strong> data breaches! <strong>DO NOT USE THIS PASSWORD!</strong></span>`;
                             
                             // Add visual warning to password input
-                            passwordInput.classList.add('border-red-500', 'ring-red-500');
-                            passwordInput.classList.remove('border-green-500', 'ring-green-500');
+                            passwordInput.classList.add('border-red-500', 'ring-red-500', 'ring-2');
+                            passwordInput.classList.remove('border-green-500', 'ring-green-500', 'border-white/30');
+                            
+                            // Add shake animation for critical breaches
+                            if (count > 1000) {
+                                passwordInput.classList.add('animate-pulse');
+                                setTimeout(() => {
+                                    passwordInput.classList.remove('animate-pulse');
+                                }, 2000);
+                            }
                         } else {
-                            breachFeedback.innerHTML = '<span class="text-green-500">✅ Password not found in any known breaches</span>';
+                            breachFeedback.innerHTML = '<span class="text-green-500 font-semibold">✅ Password not found in any known breaches</span>';
                             
                             // Remove warning styling if password is safe
-                            passwordInput.classList.remove('border-red-500', 'ring-red-500');
+                            passwordInput.classList.remove('border-red-500', 'ring-red-500', 'ring-2', 'animate-pulse');
                             if (password.length >= 8) {
                                 passwordInput.classList.add('border-green-500', 'ring-green-500');
                             }
@@ -568,6 +576,38 @@
                     this.setCustomValidity('');
                     this.classList.remove('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
                 }
+            });
+
+            // Form submission validation
+            const registerForm = document.querySelector('form[action*="register"]');
+            registerForm.addEventListener('submit', function(e) {
+                const password = passwordInput.value;
+                const confirmPassword = confirmPasswordInput.value;
+                
+                // Check if passwords match
+                if (password !== confirmPassword) {
+                    e.preventDefault();
+                    alert('❌ Passwords do not match. Please check your password confirmation.');
+                    return false;
+                }
+                
+                // Check if password is too weak
+                const strength = checkPasswordStrength(password);
+                if (strength.score < 3) {
+                    e.preventDefault();
+                    alert('❌ Password is too weak. Please choose a stronger password with at least 8 characters, including uppercase, lowercase, numbers, and special characters.');
+                    return false;
+                }
+                
+                // Check if there's a breach warning visible
+                const breachWarning = document.getElementById('breach-feedback');
+                if (breachWarning && breachWarning.innerHTML.includes('SECURITY ALERT')) {
+                    e.preventDefault();
+                    alert('🚨 SECURITY ALERT: This password has been compromised in data breaches. Please choose a different password for your security.');
+                    return false;
+                }
+                
+                // Note: Server-side validation will provide additional security
             });
         });
     </script>
