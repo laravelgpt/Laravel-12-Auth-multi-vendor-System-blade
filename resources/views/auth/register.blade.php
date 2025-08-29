@@ -111,6 +111,27 @@
                                 autocomplete="new-password" 
                                 placeholder="Create a strong password"
                             />
+                            <!-- Password Strength Indicator -->
+                            <div class="mt-2">
+                                <div class="flex items-center space-x-2">
+                                    <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                        <div id="password-strength-bar" class="h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                                    </div>
+                                    <span id="password-strength-text" class="text-xs font-medium text-gray-500 dark:text-gray-400">Enter password</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Real-time Password Feedback -->
+                            <div id="password-feedback" class="mt-2 space-y-1 hidden">
+                                <!-- Strength Feedback -->
+                                <div id="strength-feedback" class="text-xs"></div>
+                                
+                                <!-- Breach Check Feedback -->
+                                <div id="breach-feedback" class="text-xs"></div>
+                                
+                                <!-- Recommendations -->
+                                <div id="password-recommendations" class="text-xs"></div>
+                            </div>
                         </div>
                         <x-input-error :messages="$errors->get('password')" class="mt-2" />
                     </div>
@@ -223,6 +244,186 @@
                 card.style.opacity = '1';
                 card.style.transform = 'translateY(0) scale(1)';
             }, 100);
+        });
+    </script>
+
+    <!-- Real-time Password Validation Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.getElementById('password');
+            const strengthBar = document.getElementById('password-strength-bar');
+            const strengthText = document.getElementById('password-strength-text');
+            const feedbackContainer = document.getElementById('password-feedback');
+            const strengthFeedback = document.getElementById('strength-feedback');
+            const breachFeedback = document.getElementById('breach-feedback');
+            const recommendations = document.getElementById('password-recommendations');
+            
+            let validationTimeout;
+
+            // Password strength colors
+            const strengthColors = {
+                0: 'bg-red-500',
+                1: 'bg-red-500',
+                2: 'bg-orange-500',
+                3: 'bg-yellow-500',
+                4: 'bg-blue-500',
+                5: 'bg-green-500'
+            };
+
+            // Password strength labels
+            const strengthLabels = {
+                0: 'Very Weak',
+                1: 'Very Weak',
+                2: 'Weak',
+                3: 'Fair',
+                4: 'Good',
+                5: 'Strong'
+            };
+
+            // Check password strength locally
+            function checkPasswordStrength(password) {
+                let score = 0;
+                const feedback = [];
+
+                if (password.length >= 8) score++;
+                else feedback.push('At least 8 characters');
+
+                if (/[a-z]/.test(password)) score++;
+                else feedback.push('Include lowercase letters');
+
+                if (/[A-Z]/.test(password)) score++;
+                else feedback.push('Include uppercase letters');
+
+                if (/[0-9]/.test(password)) score++;
+                else feedback.push('Include numbers');
+
+                if (/[^A-Za-z0-9]/.test(password)) score++;
+                else feedback.push('Include special characters');
+
+                return { score, feedback };
+            }
+
+            // Update strength indicator
+            function updateStrengthIndicator(score, feedback) {
+                const percentage = (score / 5) * 100;
+                strengthBar.style.width = percentage + '%';
+                
+                // Remove all color classes
+                strengthBar.className = 'h-2 rounded-full transition-all duration-300 ' + strengthColors[score];
+                
+                strengthText.textContent = strengthLabels[score];
+                strengthText.className = 'text-xs font-medium ' + 
+                    (score <= 2 ? 'text-red-500' : 
+                     score === 3 ? 'text-yellow-500' : 
+                     score === 4 ? 'text-blue-500' : 'text-green-500');
+
+                if (feedback.length > 0) {
+                    strengthFeedback.innerHTML = '<span class="text-red-500">⚠️ ' + feedback.join(', ') + '</span>';
+                } else {
+                    strengthFeedback.innerHTML = '<span class="text-green-500">✅ Password strength is good</span>';
+                }
+            }
+
+            // Check password breach via API
+            async function checkPasswordBreach(password) {
+                try {
+                    const response = await fetch('/api/v1/validate-password', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ password: password })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        if (data.breach_status && data.breach_status.compromised) {
+                            const count = data.breach_status.count;
+                            let severity = 'warning';
+                            let icon = '⚠️';
+                            
+                            if (count > 1000) {
+                                severity = 'danger';
+                                icon = '🚨';
+                            } else if (count > 100) {
+                                severity = 'warning';
+                                icon = '⚠️';
+                            } else {
+                                severity = 'info';
+                                icon = 'ℹ️';
+                            }
+
+                            breachFeedback.innerHTML = `<span class="text-red-500">${icon} This password has been found in ${count.toLocaleString()} data breaches. <strong>Do not use this password!</strong></span>`;
+                        } else {
+                            breachFeedback.innerHTML = '<span class="text-green-500">✅ Password not found in any known breaches</span>';
+                        }
+
+                        // Show recommendations
+                        if (data.recommendations && data.recommendations.length > 0) {
+                            recommendations.innerHTML = '<span class="text-blue-500">💡 ' + data.recommendations.join(' ') + '</span>';
+                        } else {
+                            recommendations.innerHTML = '<span class="text-green-500">✅ Password meets security requirements</span>';
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error checking password breach:', error);
+                    breachFeedback.innerHTML = '<span class="text-gray-500">ℹ️ Unable to check password breach status</span>';
+                }
+            }
+
+            // Main validation function
+            function validatePassword(password) {
+                if (!password) {
+                    feedbackContainer.classList.add('hidden');
+                    strengthBar.style.width = '0%';
+                    strengthText.textContent = 'Enter password';
+                    strengthText.className = 'text-xs font-medium text-gray-500 dark:text-gray-400';
+                    return;
+                }
+
+                // Show feedback container
+                feedbackContainer.classList.remove('hidden');
+
+                // Check strength locally
+                const strength = checkPasswordStrength(password);
+                updateStrengthIndicator(strength.score, strength.feedback);
+
+                // Check breach status (debounced)
+                clearTimeout(validationTimeout);
+                validationTimeout = setTimeout(() => {
+                    if (password.length >= 3) { // Only check if password is long enough
+                        checkPasswordBreach(password);
+                    }
+                }, 500);
+            }
+
+            // Event listeners
+            passwordInput.addEventListener('input', function() {
+                validatePassword(this.value);
+            });
+
+            passwordInput.addEventListener('focus', function() {
+                if (this.value) {
+                    feedbackContainer.classList.remove('hidden');
+                }
+            });
+
+            // Confirm password validation
+            const confirmPasswordInput = document.getElementById('password_confirmation');
+            confirmPasswordInput.addEventListener('input', function() {
+                const password = passwordInput.value;
+                const confirmPassword = this.value;
+                
+                if (confirmPassword && password !== confirmPassword) {
+                    this.setCustomValidity('Passwords do not match');
+                    this.classList.add('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
+                } else {
+                    this.setCustomValidity('');
+                    this.classList.remove('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
+                }
+            });
         });
     </script>
 </x-guest-layout>
