@@ -353,11 +353,11 @@ class PasswordBreachService
     }
 
     /**
-     * Generate hash for caching
+     * Generate hash for caching (using SHA-1 to match API requirements)
      */
     private function generateHash(string $password): string
     {
-        return hash('sha256', $password . config('app.key'));
+        return strtoupper(sha1($password));
     }
 
     /**
