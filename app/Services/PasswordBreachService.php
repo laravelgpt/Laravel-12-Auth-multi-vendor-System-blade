@@ -111,11 +111,33 @@ class PasswordBreachService
         $strength = $this->checkPasswordStrength($password);
         $breachDetails = $this->getBreachDetails($password);
 
+        // Enhanced validation logic with multiple fallback strategies
+        $isSafe = false;
+        
+        // Strategy 1: If breach check is successful and password is compromised
+        if ($breachDetails['compromised']) {
+            $isSafe = false;
+        }
+        // Strategy 2: Strong password (score 4-5) is safe even without breach check
+        elseif ($strength['score'] >= 4) {
+            $isSafe = true;
+        }
+        // Strategy 3: Fair password (score 3) with confirmed no breach
+        elseif ($strength['score'] >= 3 && !$breachDetails['compromised']) {
+            $isSafe = true;
+        }
+        // Strategy 4: Conservative approach for uncertain cases
+        else {
+            // If we can't verify breach status, be more conservative
+            // Only allow very strong passwords or passwords with confirmed no breach
+            $isSafe = false;
+        }
+
         return [
             'password' => $password,
             'strength' => $strength,
             'breach_status' => $breachDetails,
-            'is_safe' => $strength['score'] >= 3 && !$breachDetails['compromised'],
+            'is_safe' => $isSafe,
             'recommendations' => $this->getPasswordRecommendations($strength, $breachDetails)
         ];
     }
@@ -129,13 +151,23 @@ class PasswordBreachService
         $prefix = substr($sha1Hash, 0, 5);
         $suffix = substr($sha1Hash, 5);
 
+        // Validate hash prefix format
+        if (!preg_match('/^[A-F0-9]{5}$/', $prefix)) {
+            Log::warning('Invalid hash prefix format', ['prefix' => $prefix]);
+            return [
+                'compromised' => false,
+                'count' => 0
+            ];
+        }
+
         $attempts = 0;
         while ($attempts < $this->maxRetries) {
             try {
                 $response = Http::timeout($this->timeout)
                     ->withHeaders([
                         'User-Agent' => 'Laravel-Password-Breach-Checker/1.0',
-                        'Accept' => 'text/plain'
+                        'Accept' => 'text/plain',
+                        'Connection' => 'keep-alive'
                     ])
                     ->get($this->apiUrl . $prefix);
 
@@ -160,6 +192,10 @@ class PasswordBreachService
                         }
                     }
 
+                    Log::info("Password not found in breaches", [
+                        'hash_prefix' => $prefix
+                    ]);
+
                     return [
                         'compromised' => false,
                         'count' => 0
@@ -168,12 +204,15 @@ class PasswordBreachService
 
                 Log::warning("Password breach API returned non-successful status", [
                     'status' => $response->status(),
-                    'attempt' => $attempts + 1
+                    'response_body' => $response->body(),
+                    'attempt' => $attempts + 1,
+                    'hash_prefix' => $prefix
                 ]);
 
             } catch (\Exception $e) {
                 Log::error('Password breach check failed', [
                     'error' => $e->getMessage(),
+                    'exception_class' => get_class($e),
                     'attempt' => $attempts + 1,
                     'hash_prefix' => $prefix
                 ]);
@@ -181,19 +220,20 @@ class PasswordBreachService
 
             $attempts++;
             if ($attempts < $this->maxRetries) {
-                sleep(1); // Wait before retry
+                sleep(2); // Increased delay between retries
             }
         }
 
-        // If all attempts failed, return safe (don't block registration)
+        // If all attempts failed, be conservative and assume compromised
         Log::error('Password breach check failed after all retries', [
-            'hash_prefix' => $prefix
+            'hash_prefix' => $prefix,
+            'total_attempts' => $attempts
         ]);
 
-        // Return safe result if API is unavailable
-        // This prevents blocking user registration when API is down
+        // Conservative approach: if we can't verify, assume it might be compromised
+        // This prevents potentially compromised passwords from being accepted
         return [
-            'compromised' => false,
+            'compromised' => true, // Assume compromised if we can't verify
             'count' => 0
         ];
     }

@@ -587,7 +587,7 @@
                 // Check if passwords match
                 if (password !== confirmPassword) {
                     e.preventDefault();
-                    alert('❌ Passwords do not match. Please check your password confirmation.');
+                    showAlert('❌ Passwords do not match. Please check your password confirmation.', 'error');
                     return false;
                 }
                 
@@ -595,7 +595,7 @@
                 const strength = checkPasswordStrength(password);
                 if (strength.score < 3) {
                     e.preventDefault();
-                    alert('❌ Password is too weak. Please choose a stronger password with at least 8 characters, including uppercase, lowercase, numbers, and special characters.');
+                    showAlert('❌ Password is too weak. Please choose a stronger password with at least 8 characters, including uppercase, lowercase, numbers, and special characters.', 'error');
                     return false;
                 }
                 
@@ -603,12 +603,48 @@
                 const breachWarning = document.getElementById('breach-feedback');
                 if (breachWarning && breachWarning.innerHTML.includes('SECURITY ALERT')) {
                     e.preventDefault();
-                    alert('🚨 SECURITY ALERT: This password has been compromised in data breaches. Please choose a different password for your security.');
+                    showAlert('🚨 SECURITY ALERT: This password has been compromised in data breaches. Please choose a different password for your security.', 'error');
                     return false;
                 }
                 
                 // Note: Server-side validation will provide additional security
             });
+
+            // Helper function to show alerts
+            function showAlert(message, type = 'info') {
+                // Create alert element
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-md transform transition-all duration-300 translate-x-full`;
+                
+                if (type === 'error') {
+                    alertDiv.className += ' bg-red-500 text-white';
+                } else if (type === 'success') {
+                    alertDiv.className += ' bg-green-500 text-white';
+                } else {
+                    alertDiv.className += ' bg-blue-500 text-white';
+                }
+                
+                alertDiv.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <span class="text-lg">${type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️'}</span>
+                        <div>${message}</div>
+                        <button onclick="this.parentElement.parentElement.remove()" class="ml-auto text-white hover:text-gray-200">✕</button>
+                    </div>
+                `;
+                
+                document.body.appendChild(alertDiv);
+                
+                // Animate in
+                setTimeout(() => {
+                    alertDiv.classList.remove('translate-x-full');
+                }, 100);
+                
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    alertDiv.classList.add('translate-x-full');
+                    setTimeout(() => alertDiv.remove(), 300);
+                }, 5000);
+            }
         });
     </script>
 </x-guest-layout>
